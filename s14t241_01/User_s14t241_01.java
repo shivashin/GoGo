@@ -10,9 +10,9 @@ import sys.user.GogoCompSub;
 
 public class User_s14t241_01 extends GogoCompSub {
 
-//====================================================================
-//  コンストラクタ
-//====================================================================
+  //====================================================================
+  //  コンストラクタ
+  //====================================================================
 
   public User_s14t241_01(GamePlayer player) {
     super(player);
@@ -20,9 +20,9 @@ public class User_s14t241_01 extends GogoCompSub {
 
   }
 
-//--------------------------------------------------------------------
-//  コンピュータの着手
-//--------------------------------------------------------------------
+  //--------------------------------------------------------------------
+  //  コンピュータの着手
+  //--------------------------------------------------------------------
 
   public synchronized GameHand calc_hand(GameState state, GameHand hand) {
     theState = state;
@@ -36,14 +36,16 @@ public class User_s14t241_01 extends GogoCompSub {
     calc_values(theState, theBoard);
     // 先手後手、取石数、手数(序盤・中盤・終盤)で評価関数を変える
 
+    // 評価値の表示
+    showValue();
     //--  着手の決定
     return deside_hand();
 
   }
 
-//----------------------------------------------------------------
-//  置石チェック
-//----------------------------------------------------------------
+  //----------------------------------------------------------------
+  //  置石チェック
+  //----------------------------------------------------------------
 
   public void init_values(GameState prev, GameBoard board) {
     this.size = board.SX;
@@ -51,9 +53,9 @@ public class User_s14t241_01 extends GogoCompSub {
     for (int i = 0; i < size; i++) {
       for (int j = 0; j < size; j++) {
         if (board.get_cell(i, j) != board.SPACE) {
-          values[i][j] = -2;
+          values[i][j] = -10;
         } else {
-          if (values[i][j] == -2) {
+          if (values[i][j] == -10) {
             values[i][j] = 0;
           }
         }
@@ -61,9 +63,9 @@ public class User_s14t241_01 extends GogoCompSub {
     }
   }
 
-//----------------------------------------------------------------
-//  評価値の計算
-//----------------------------------------------------------------
+  //----------------------------------------------------------------
+  //  評価値の計算
+  //----------------------------------------------------------------
 
   public void calc_values(GameState prev, GameBoard board) {
     int [][] cell = board.get_cell_all();  // 盤面情報
@@ -71,11 +73,17 @@ public class User_s14t241_01 extends GogoCompSub {
     mycolor = role;
 
     //--  各マスの評価値
-    for (int i = 0; i < size; i++) {
-      for (int j = 0; j < size; j++) {
+    for ( int i = 0; i < size; i++ ) {
+      for ( int j = 0; j < size; j++ ) {
         // 埋まっているマスはスルー
-        if (values[i][j] == -2) { continue; }
+        if (values[i][j] < 0) { continue; }
         //--  適当な評価の例
+        // 禁じ手判定
+        if ( isFoul(cell, mycolor, i, j) ) {
+          values[i][j] = -69;
+          continue;
+        }
+
         // 相手の五連を崩す → 1000;
         // 勝利(五取) → 950;
         // 勝利(五連) → 900;
@@ -112,10 +120,12 @@ public class User_s14t241_01 extends GogoCompSub {
         // 自分の石を守る → 200;
         if ( check_rem(cell, mycolor*-1, i, j) ) { values[i][j] = 200; }
         // ランダム
+        /*
         if (values[i][j] == 0) {
           int aaa = (int) Math.round(Math.random() * 15);
           if (values[i][j] < aaa) { values[i][j] = aaa; }
         }
+        */
         // 四々や四三の判定
         // 飛び三や飛び四の判定
         // 三をどちらで止めるか
@@ -123,9 +133,9 @@ public class User_s14t241_01 extends GogoCompSub {
     }
   }
 
-//----------------------------------------------------------------
-//  連の全周チェック
-//----------------------------------------------------------------
+  //----------------------------------------------------------------
+  //  連の全周チェック
+  //----------------------------------------------------------------
 
   boolean check_run(int[][] board, int color, int i, int j, int len) {
     for ( int dx = -1; dx <= 1; dx++ ) {
@@ -137,9 +147,9 @@ public class User_s14t241_01 extends GogoCompSub {
     return false;
   }
 
-//----------------------------------------------------------------
-//  連の方向チェック(止連・端連・長連も含む、飛びは無視)
-//----------------------------------------------------------------
+  //----------------------------------------------------------------
+  //  連の方向チェック(止連・端連・長連も含む、飛びは無視)
+  //----------------------------------------------------------------
 
   boolean check_run_dir(int[][] board, int color, int i, int j, int dx, int dy, int len) {
     for ( int k = 1; k < len; k++ ) {
@@ -151,9 +161,9 @@ public class User_s14t241_01 extends GogoCompSub {
     return true;
   }
 
-//----------------------------------------------------------------
-//  取の全周チェック(ダブルの判定は無し)
-//----------------------------------------------------------------
+  //----------------------------------------------------------------
+  //  取の全周チェック(ダブルの判定は無し)
+  //----------------------------------------------------------------
 
   boolean check_rem(int [][] board, int color, int i, int j) {
     for ( int dx = -1; dx <= 1; dx++ ) {
@@ -165,9 +175,9 @@ public class User_s14t241_01 extends GogoCompSub {
     return false;
   }
 
-//----------------------------------------------------------------
-//  取の方向チェック
-//----------------------------------------------------------------
+  //----------------------------------------------------------------
+  //  取の方向チェック
+  //----------------------------------------------------------------
 
   boolean check_rem_dir(int[][] board, int color, int i, int j, int dx, int dy) {
     int len = 3;
@@ -180,9 +190,9 @@ public class User_s14t241_01 extends GogoCompSub {
     }
     return true;
   }
-//----------------------------------------------------------------
-//  着手の決定
-//----------------------------------------------------------------
+  //----------------------------------------------------------------
+  //  着手の決定
+  //----------------------------------------------------------------
 
   public GameHand deside_hand() {
     GogoHand hand = new GogoHand();
@@ -199,5 +209,111 @@ public class User_s14t241_01 extends GogoCompSub {
     }
     return hand;
   }
+  //------------------------------------------------
+  // 評価値の表示
+  //------------------------------------------------
+  public void showValue() {
+    int i, j;
+    for ( i = 0; i < size; i++ ) {
+      for ( j = 0; j < size; j++ ) {
+        System.out.printf("%3d ", values[i][j]);
+      }
+      System.out.printf("\n");
+    }
+    System.out.printf("\n");
+  }
 
+  //------------------------------------------------
+  // 範囲外かの判定
+  //------------------------------------------------
+  public boolean isOutOfRange(int x, int y) {
+    if ( x < 0 || y < 0 || x >= size || y >= size ) {
+      return true;
+    }
+    return false;
+  }
+
+  //------------------------------------------------
+  // 禁じ手の判定
+  //------------------------------------------------
+  public boolean isFoul(int[][] board, int color, int i, int j) {
+    int k = 0;
+    int tmp = 0;
+    int dx, dy;
+    for ( dx = -1; dx <= 1; dx++ ) {
+      for ( dy = -1; dy <= 1; dy++ ) {
+        if ( dx == 0 && dy == 0 ) { continue; }
+        if ( isFoulL(board, color, i, j, dx, dy) ) { return true; }
+        if ( isFoulT(board, color, i, j, dx, dy) ) { return true; }
+      }
+    }
+    //if ( isFoulX(board, color, i, j, dx, dy) ) { return true; }
+    return false;
+  }
+  //------------------------------------------------
+  // 禁じ手の判定
+  //------------------------------------------------
+  public boolean isFoulL(int[][] board, int color, int i, int j, int dx0, int dy0) {
+    int len = 3;  // 判定の必要な数
+    /* 範囲外判定と評価がすでにある場合を除外
+    if ( ! isOutOfRange(i-dx0, j-dy0) ) {
+      if ( board[i-dy0][j-dx0] != 0 ) {
+        return false;
+      }
+    }
+    */
+
+    // 以下禁じ手判定
+    for ( int dx1 = -1; dx1 <= 1; dx1++ ) {
+      for ( int dy1 = -1; dy1 <= 1; dy1++ ) {
+        // 元の位地は除外
+        if ( dx1 == 0 && dy1 == 0 ) { continue; }
+        // 同一方向の除外
+        if ( dx0 == dx1 && dy0 == dy1 ) { continue; }
+        // 反対方向同士は五連になるので除外
+        if ( dx0 == -dx1 && dy0 == -dy1 ) { continue; }
+        // 3つ先が範囲外なら除外
+        if ( isOutOfRange(i+dx0*len,j+dy0*len) || isOutOfRange(i+dx1*len,j+dy1*len) ) { continue; }
+        /* 範囲外判定と評価がすでにある場合は除外
+        if ( ! isOutOfRange(i-dx1, j-dy1) ) {
+          if ( board[i-dx1][j-dy1] != 0 ) {
+            continue;
+          }
+        }
+        */
+        if ( isTwoLen(board, color, i, j, dx0, dy0) && isTwoLen(board, color, i, j, dx1, dy1) ) { return true; }
+      }
+    }
+    return false;
+  }
+
+  public boolean isFoulT(int[][] board, int color, int i, int j, int dx, int dy) {
+    return false;
+  }
+
+  public boolean isFoulX(int[][] board, int color, int i, int j, int dx, int dy) {
+    return false;
+  }
+
+  public boolean isTwoLen(int[][] board, int color, int i, int j, int dx, int dy) {
+    int k;
+    int len = 2;
+    for ( k = 1; k <= len; k++ ) {
+      if ( !isOutOfRange(i+dx*k,j+dy*k) ) {
+        if ( board[i+dx*k][j+dy*k] != color ) {
+          return false;
+        }
+      }
+    }
+    if ( !isOutOfRange(i+dx*k,j+dy*k) ) {
+      if ( board[i+dx*k][j+dy*k] != 0 ) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  //-----------------------------------------------
 }
+
+
