@@ -121,11 +121,11 @@ public class User_s14t241_01 extends GogoCompSub {
         if ( check_rem(cell, mycolor*-1, i, j) ) { values[i][j] = 200; }
         // ランダム
         /*
-        if (values[i][j] == 0) {
-          int aaa = (int) Math.round(Math.random() * 15);
-          if (values[i][j] < aaa) { values[i][j] = aaa; }
-        }
-        */
+           if (values[i][j] == 0) {
+           int aaa = (int) Math.round(Math.random() * 15);
+           if (values[i][j] < aaa) { values[i][j] = aaa; }
+           }
+           */
         // 四々や四三の判定
         // 飛び三や飛び四の判定
         // 三をどちらで止めるか
@@ -239,19 +239,18 @@ public class User_s14t241_01 extends GogoCompSub {
   public boolean isFoul(int[][] board, int color, int i, int j) {
     int k = 0;
     int tmp = 0;
-    int dx, dy;
-    for ( dx = -1; dx <= 1; dx++ ) {
-      for ( dy = -1; dy <= 1; dy++ ) {
+    for ( int dx = -1; dx <= 1; dx++ ) {
+      for ( int dy = -1; dy <= 1; dy++ ) {
         if ( dx == 0 && dy == 0 ) { continue; }
         if ( isFoulL(board, color, i, j, dx, dy) ) { return true; }
         if ( isFoulT(board, color, i, j, dx, dy) ) { return true; }
+        if ( isFoulX(board, color, i, j, dx, dy) ) { return true; }
       }
     }
-    //if ( isFoulX(board, color, i, j, dx, dy) ) { return true; }
     return false;
   }
   //------------------------------------------------
-  // 禁じ手の判定
+  // 禁じ手の判定L字
   //------------------------------------------------
   public boolean isFoulL(int[][] board, int color, int i, int j, int dx0, int dy0) {
     int len = 3;  // 範囲外判定の必要な数
@@ -274,6 +273,9 @@ public class User_s14t241_01 extends GogoCompSub {
     return false;
   }
 
+  //------------------------------------------------
+  // 禁じ手の判定T字
+  //------------------------------------------------
   public boolean isFoulT(int[][] board, int color, int i, int j, int dx0, int dy0) {
     // 最初に2連があるかどうかを判断する
     if ( ! isLen(board, color, i, j, dx0, dy0, 2) ) { return false; }
@@ -289,26 +291,57 @@ public class User_s14t241_01 extends GogoCompSub {
         // 範囲外判定
         if ( isOutOfRange(i+dx1*2, j+dy1*2) || isOutOfRange(i-dx1*2, j-dy1*2) ) { continue; }
         // 2連の左右に石があることと2連の反対側に石が無いか
-        if ( isLen(board, color, i, j, dx1, dy1, 1) && isLen(board, color, i, j, -dx1, -dy1, 1) && board[i-dx0][j-dy0] >= 0 ) { return true; }
+        if ( isLen(board, color, i, j, dx1, dy1, 1) && isLen(board, color, i, j, -dx1, -dy1, 1) && board[i-dx0][j-dy0] == 0 ) { return true; }
       }
     }
     return false;
   }
 
-  public boolean isFoulX(int[][] board, int color, int i, int j, int dx, int dy) {
+  //------------------------------------------------
+  // 禁じ手の判定X字
+  //------------------------------------------------
+  public boolean isFoulX(int[][] board, int color, int i, int j, int dx0, int dy0) {
+    int count = 0;  // 個数カウント用
+    int serachLen = 1;  // 調べる連の数
+    //-- 置く周りに石が何個あるか
+    for ( int dx1 = -1; dx1 <= 1; dx1++ ) {
+      for ( int dy1 = -1; dy1 <= 1; dy1++ ) {
+        // 元の位地は除外
+        if ( dx1 == 0 && dy1 == 0 ) { continue; }
+        // 同一方向の除外
+        if ( dx0 == dx1 && dy0 == dy1 ) { continue; }
+        // 反対方向同士は操作対象外除外
+        if ( dx0 == -dx1 && dy0 == -dy1 ) { continue; }
+        // 石が1連+空白があるか
+        if ( isLen(board, color, i, j, dx0, dy0, serachLen) && isLen(board, color, i, j, -dx0, -dy0, serachLen) ) {
+          if ( isLen(board, color, i, j, dx1, dy1, serachLen) && isLen(board, color, i, j, -dx1, -dy1, serachLen) ) {
+            return true;
+          }
+        } 
+      }
+    }
     return false;
   }
 
+  //------------------------------------------------
+  // 指定連+空白判定 ++- +++- +- +･･･石  -･･･空白
+  //------------------------------------------------
   public boolean isLen(int[][] board, int color, int i, int j, int dx, int dy, int len) {
     int k;
+    //-- 指定個数の連続があるか
     for ( k = 1; k <= len; k++ ) {
+      // 範囲外かの判定
       if ( !isOutOfRange(i+dx*k,j+dy*k) ) {
+        // 自分音石が無かったら
         if ( board[i+dx*k][j+dy*k] != color ) {
           return false;
         }
       }
     }
+    //-- 指定個数の連続の後に空白があるか
+    // 範囲外の判定
     if ( !isOutOfRange(i+dx*k,j+dy*k) ) {
+      // 次の場所に石があったら
       if ( board[i+dx*k][j+dy*k] != 0 ) {
         return false;
       }
