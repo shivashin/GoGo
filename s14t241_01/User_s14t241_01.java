@@ -216,7 +216,7 @@ public class User_s14t241_01 extends GogoCompSub {
     int i, j;
     for ( i = 0; i < size; i++ ) {
       for ( j = 0; j < size; j++ ) {
-        System.out.printf("%3d ", values[i][j]);
+        System.out.printf("%3d ", values[j][i]);
       }
       System.out.printf("\n");
     }
@@ -254,14 +254,8 @@ public class User_s14t241_01 extends GogoCompSub {
   // 禁じ手の判定
   //------------------------------------------------
   public boolean isFoulL(int[][] board, int color, int i, int j, int dx0, int dy0) {
-    int len = 3;  // 判定の必要な数
-    /* 範囲外判定と評価がすでにある場合を除外
-    if ( ! isOutOfRange(i-dx0, j-dy0) ) {
-      if ( board[i-dy0][j-dx0] != 0 ) {
-        return false;
-      }
-    }
-    */
+    int len = 3;  // 範囲外判定の必要な数
+    int serachLen = 2; // 禁じ手判定に必要な連数
 
     // 以下禁じ手判定
     for ( int dx1 = -1; dx1 <= 1; dx1++ ) {
@@ -274,20 +268,30 @@ public class User_s14t241_01 extends GogoCompSub {
         if ( dx0 == -dx1 && dy0 == -dy1 ) { continue; }
         // 3つ先が範囲外なら除外
         if ( isOutOfRange(i+dx0*len,j+dy0*len) || isOutOfRange(i+dx1*len,j+dy1*len) ) { continue; }
-        /* 範囲外判定と評価がすでにある場合は除外
-        if ( ! isOutOfRange(i-dx1, j-dy1) ) {
-          if ( board[i-dx1][j-dy1] != 0 ) {
-            continue;
-          }
-        }
-        */
-        if ( isTwoLen(board, color, i, j, dx0, dy0) && isTwoLen(board, color, i, j, dx1, dy1) ) { return true; }
+        if ( isLen(board, color, i, j, dx0, dy0, serachLen) && isLen(board, color, i, j, dx1, dy1, serachLen) ) { return true; }
       }
     }
     return false;
   }
 
-  public boolean isFoulT(int[][] board, int color, int i, int j, int dx, int dy) {
+  public boolean isFoulT(int[][] board, int color, int i, int j, int dx0, int dy0) {
+    // 最初に2連があるかどうかを判断する
+    if ( ! isLen(board, color, i, j, dx0, dy0, 2) ) { return false; }
+
+    for ( int dx1 = -1; dx1 <= 1; dx1++ ) {
+      for ( int dy1 = -1; dy1 <= 1; dy1++ ) {
+        // 元の位地は除外
+        if ( dx1 == 0 && dy1 == 0 ) { continue; }
+        // 同一方向の除外
+        if ( dx0 == dx1 && dy0 == dy1 ) { continue; }
+        // 反対方向同士は33の違反にならないので除外
+        if ( dx0 == -dx1 && dy0 == -dy1 ) { continue; }
+        // 範囲外判定
+        if ( isOutOfRange(i+dx1*2, j+dy1*2) || isOutOfRange(i-dx1*2, j-dy1*2) ) { continue; }
+        // 2連の左右に石があることと2連の反対側に石が無いか
+        if ( isLen(board, color, i, j, dx1, dy1, 1) && isLen(board, color, i, j, -dx1, -dy1, 1) && board[i-dx0][j-dy0] >= 0 ) { return true; }
+      }
+    }
     return false;
   }
 
@@ -295,9 +299,8 @@ public class User_s14t241_01 extends GogoCompSub {
     return false;
   }
 
-  public boolean isTwoLen(int[][] board, int color, int i, int j, int dx, int dy) {
+  public boolean isLen(int[][] board, int color, int i, int j, int dx, int dy, int len) {
     int k;
-    int len = 2;
     for ( k = 1; k <= len; k++ ) {
       if ( !isOutOfRange(i+dx*k,j+dy*k) ) {
         if ( board[i+dx*k][j+dy*k] != color ) {
