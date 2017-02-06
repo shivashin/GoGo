@@ -70,7 +70,10 @@ public class User_s14t241_01 extends GogoCompSub {
   public void calc_values(GameState prev, GameBoard board) {
     int [][] cell = board.get_cell_all();  // 盤面情報
     int mycolor;                  // 自分の石の色
+    int myStone = get_mystone(prev);
+    int enemyStone = get_enemystone(prev);
     mycolor = role;
+
 
     //--  各マスの評価値
     for ( int i = 0; i < size; i++ ) {
@@ -78,11 +81,11 @@ public class User_s14t241_01 extends GogoCompSub {
         // 埋まっているマスはスルー
         if (values[i][j] < 0) { continue; }
         //-- 自分の手の評価
-        values[i][j] = myEvaluation(cell, mycolor, i, j);
+        values[i][j] = myEvaluation(cell, mycolor, i, j, myStone);
         // もし禁じ手なら
         if ( values[i][j] < 0 ) { continue; }
         //-- 相手の評価
-        values[i][j] += enemyEvaluation(cell, mycolor*-1, i, j);
+        values[i][j] += enemyEvaluation(cell, mycolor*-1, i, j, enemyStone);
         // ランダム
         if (values[i][j] == 0) {
           int aaa = (int) Math.round(Math.random() * 15);
@@ -99,14 +102,18 @@ public class User_s14t241_01 extends GogoCompSub {
   //----------------------------------------------------------------
   //  自分の手の評価 
   //----------------------------------------------------------------
-  public int myEvaluation(int[][] board, int color, int i, int j) {
+  public int myEvaluation(int[][] board, int color, int i, int j, int stone) {
     int myPoint = 0;
     // 禁じ手判定
-    if ( isFoul(board, color, i, j) ) { return myPoint = -69; }
-    // 5連を作る(Win)
+    if ( isFoul(board, color, i, j) ) { return myPoint = -50; }
+    // 石を10個とって勝利
+    if ( stone == 8 && check_rem(board, color*-1, i, j) ) { return myPoint = 900; }
+    // 自分の5連を作る
     if ( check_run(board, color, i, j, 5) ) { return myPoint = 900; }
     // 自分の四連を作る → 600;
     if ( check_run(board, color, i, j, 4) ) { return myPoint = 600; }
+    // 8個目の石を取る
+    if ( stone == 6 && check_rem(board, color*-1, i, j) ) { return myPoint = 500; }
     // 自分の三連を作る → 400;
     if ( check_run(board, color, i, j, 3) ) { return myPoint = 400; }
     // 相手の石を取る → 300;
@@ -120,12 +127,16 @@ public class User_s14t241_01 extends GogoCompSub {
   //----------------------------------------------------------------
   //  相手の手の評価 
   //----------------------------------------------------------------
-  public int enemyEvaluation(int[][] board, int color, int i, int j) {
+  public int enemyEvaluation(int[][] board, int color, int i, int j, int stone) {
     int enemyPoint = 0;
     // 敗北阻止(五連) → 800;
     if ( check_run(board, color, i, j, 5) ) { return enemyPoint = 800; }
+    // 敗北阻止10個取られる
+    if ( stone == 8 && check_rem(board, color*-1, i, j) ) { return enemyPoint = 800; }
     // 相手の四連を止める → 700;
     if ( check_run(board, color, i, j, 4) ) { return enemyPoint = 700; }
+    // 8個目の石を取らせないようにする
+    if ( stone == 6 && check_rem(board, color*-1, i, j) ) { return enemyPoint = 500; }
     // 相手の三連を防ぐ → 500;
     if ( check_run(board, color, i, j, 3) ) { return enemyPoint = 500; }
     // 値の返却
