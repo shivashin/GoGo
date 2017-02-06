@@ -77,48 +77,12 @@ public class User_s14t241_01 extends GogoCompSub {
       for ( int j = 0; j < size; j++ ) {
         // 埋まっているマスはスルー
         if (values[i][j] < 0) { continue; }
-        //--  適当な評価の例
-        // 禁じ手判定
-        if ( isFoul(cell, mycolor, i, j) ) {
-          values[i][j] = -69;
-          continue;
-        }
-
-        // 相手の五連を崩す → 1000;
-        // 勝利(五取) → 950;
-        // 勝利(五連) → 900;
-        if ( check_run(cell, mycolor, i, j, 5) ) {
-          values[i][j] = 900;
-          continue;
-        }
-        // 敗北阻止(五取) → 850;
-        // 敗北阻止(五連) → 800;
-        if ( check_run(cell, mycolor*-1, i, j, 5) ) {
-          values[i][j] = 800;
-          continue;
-        }
-        // 相手の四連を止める → 700;
-        if ( check_run(cell, mycolor*-1, i, j, 4) ) {
-          values[i][j] = 700;
-          continue;
-        }
-        // 自分の四連を作る → 600;
-        if ( check_run(cell, mycolor, i, j, 4) ) {
-          values[i][j] = 600;
-          continue;
-        }
-        // 相手の三連を防ぐ → 500;
-        if ( check_run(cell, mycolor*-1, i, j, 3) ) {
-          values[i][j] = 500;
-          continue;
-        }
-        // 自分の三連を作る → 400;
-        if ( check_run(cell, mycolor, i, j, 3) ) { values[i][j] = 400; }
-        // 三々の禁じ手は打たない → -1
-        // 相手の石を取る → 300;
-        if ( check_rem(cell, mycolor, i, j) ) { values[i][j] = 300; }
-        // 自分の石を守る → 200;
-        if ( check_rem(cell, mycolor*-1, i, j) ) { values[i][j] = 200; }
+        //-- 自分の手の評価
+        values[i][j] = myEvaluation(cell, mycolor, i, j);
+        // もし禁じ手なら
+        if ( values[i][j] < 0 ) { continue; }
+        //-- 相手の評価
+        values[i][j] += enemyEvaluation(cell, mycolor*-1, i, j);
         // ランダム
         if (values[i][j] == 0) {
           int aaa = (int) Math.round(Math.random() * 15);
@@ -130,6 +94,42 @@ public class User_s14t241_01 extends GogoCompSub {
       }
     }
     addBoardValues(values);
+  }
+
+  //----------------------------------------------------------------
+  //  自分の手の評価 
+  //----------------------------------------------------------------
+  public int myEvaluation(int[][] board, int color, int i, int j) {
+    int myPoint = 0;
+    // 禁じ手判定
+    if ( isFoul(board, color, i, j) ) { return myPoint = -69; }
+    // 5連を作る(Win)
+    if ( check_run(board, color, i, j, 5) ) { return myPoint = 900; }
+    // 自分の四連を作る → 600;
+    if ( check_run(board, color, i, j, 4) ) { return myPoint = 600; }
+    // 自分の三連を作る → 400;
+    if ( check_run(board, color, i, j, 3) ) { return myPoint = 400; }
+    // 相手の石を取る → 300;
+    if ( check_rem(board, color, i, j) ) { return myPoint = 300; }
+    // 自分の石を守る → 200;
+    if ( check_rem(board, color*-1, i, j) ) { return myPoint = 200; }
+    // 値の返却
+    return myPoint;
+  }
+
+  //----------------------------------------------------------------
+  //  相手の手の評価 
+  //----------------------------------------------------------------
+  public int enemyEvaluation(int[][] board, int color, int i, int j) {
+    int enemyPoint = 0;
+    // 敗北阻止(五連) → 800;
+    if ( check_run(board, color, i, j, 5) ) { return enemyPoint = 800; }
+    // 相手の四連を止める → 700;
+    if ( check_run(board, color, i, j, 4) ) { return enemyPoint = 700; }
+    // 相手の三連を防ぐ → 500;
+    if ( check_run(board, color, i, j, 3) ) { return enemyPoint = 500; }
+    // 値の返却
+    return enemyPoint;
   }
 
   //----------------------------------------------------------------
