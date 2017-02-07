@@ -110,12 +110,18 @@ public class User_s14t241_01 extends GogoCompSub {
     if ( stone == 8 && check_rem(board, color*-1, i, j) ) { return myPoint = 900; }
     // 自分の5連を作る
     if ( check_run(board, color, i, j, 5) ) { return myPoint = 900; }
+    // 自分の飛び5連を作る
+    if ( isJumpLen(board, color, i, j, 5) ) { return myPoint = 900; }
     // 自分の四連を作る → 600;
     if ( check_run(board, color, i, j, 4) ) { return myPoint = 600; }
+    // 自分の飛び4連を作る
+    if ( isJumpLen(board, color, i, j, 4) ) { return myPoint = 600; }
     // 8個目の石を取る
     if ( stone == 6 && check_rem(board, color*-1, i, j) ) { return myPoint = 500; }
     // 自分の三連を作る → 400;
     if ( check_run(board, color, i, j, 3) ) { return myPoint = 400; }
+    // 自分の飛び三連を作る
+    if ( isJumpLen(board, color, i, j, 3) ) { return myPoint = 400; }
     // 相手の石を取る → 300;
     if ( check_rem(board, color, i, j) ) { return myPoint = 300; }
     // 自分の石を守る → 200;
@@ -131,14 +137,20 @@ public class User_s14t241_01 extends GogoCompSub {
     int enemyPoint = 0;
     // 敗北阻止(五連) → 800;
     if ( check_run(board, color, i, j, 5) ) { return enemyPoint = 800; }
+    // 敗北阻止(飛び5連)
+    if ( isJumpLen(board, color, i, j, 5) ) { return enemyPoint = 800; }
     // 敗北阻止10個取られる
     if ( stone == 8 && check_rem(board, color*-1, i, j) ) { return enemyPoint = 800; }
     // 相手の四連を止める → 700;
     if ( check_run(board, color, i, j, 4) ) { return enemyPoint = 700; }
+    // 相手の飛び4連を阻止
+    if ( isJumpLen(board, color, i, j, 4) ) { return enemyPoint = 700; }
     // 8個目の石を取らせないようにする
     if ( stone == 6 && check_rem(board, color*-1, i, j) ) { return enemyPoint = 500; }
     // 相手の三連を防ぐ → 500;
     if ( check_run(board, color, i, j, 3) ) { return enemyPoint = 500; }
+    // 相手の3連を防ぐ
+    if ( isJumpLen(board, color, i, j, 3) ) { return enemyPoint = 500; }
     // 値の返却
     return enemyPoint;
   }
@@ -226,7 +238,7 @@ public class User_s14t241_01 extends GogoCompSub {
     int i, j;
     for ( i = 0; i < size; i++ ) {
       for ( j = 0; j < size; j++ ) {
-        System.out.printf("%3d ", values[j][i]);
+        System.out.printf("%5d ", values[j][i]);
       }
       System.out.printf("\n");
     }
@@ -366,10 +378,10 @@ public class User_s14t241_01 extends GogoCompSub {
       for ( int dy = -1; dy <= 1; dy++ ) {
         if (  dx == 0 && dy == 0 ) { continue; }
         for ( int l1 = 1; l1 <= len-2; l1++ ) {
-        int l2 = len - l1 - 1;
-        if ( check_run_dir(board,color, i, j, dx, dy, l1) && check_run_dir(board, color, i, j, -dx, -dy, l2) ) {
-          return true;
-        }
+          int l2 = len - l1- 1;
+          if ( check_run_dir(board,color, i, j, dx, dy, l1+1) && check_run_dir(board, color, i, j, -dx, -dy, l2+1) ) {
+            return true;
+          }
         }
       }
     }
