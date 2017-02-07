@@ -359,6 +359,23 @@ public class User_s14t241_01 extends GogoCompSub {
     return true;
   }
   //------------------------------------------------
+  // 飛びの判定
+  //------------------------------------------------
+  public boolean isJumpLen(int[][] board, int color, int i, int j, int len) {
+    for ( int dx = -1; dx <= 1; dx++ ) {
+      for ( int dy = -1; dy <= 1; dy++ ) {
+        if (  dx == 0 && dy == 0 ) { continue; }
+        for ( int l1 = 1; l1 <= len-2; l1++ ) {
+        int l2 = len - l1 - 1;
+        if ( check_run_dir(board,color, i, j, dx, dy, l1) && check_run_dir(board, color, i, j, -dx, -dy, l2) ) {
+          return true;
+        }
+        }
+      }
+    }
+    return false;
+  }
+  //------------------------------------------------
   // 盤面に評価値を付ける
   //------------------------------------------------
   public void addBoardValues(int[][] values) {
