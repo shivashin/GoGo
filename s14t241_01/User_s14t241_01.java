@@ -105,19 +105,19 @@ public class User_s14t241_01 extends GogoCompSub {
   public int myEvaluation(int[][] board, int color, int i, int j, int stone) {
     int myPoint = 0;
     // 禁じ手判定
-    if ( isFoul(board, color, i, j) ) { return myPoint = -50; }
+    if ( isFoul(board, color, i, j) ) { return myPoint = -5000; }
     // 石を10個とって勝利
-    if ( stone == 8 && check_rem(board, color*-1, i, j) ) { return myPoint = 900; }
+    if ( stone == 8 && check_rem(board, color*-1, i, j) ) { return myPoint = 1000; }
     // 自分の5連を作る
-    if ( check_run(board, color, i, j, 5) ) { return myPoint = 900; }
+    if ( check_run(board, color, i, j, 5) ) { return myPoint = 1000; }
     // 自分の飛び5連を作る
-    if ( isJumpLen(board, color, i, j, 5) ) { return myPoint = 900; }
+    if ( isJumpLen(board, color, i, j, 5) ) { return myPoint = 1000; }
     // 自分の四連を作る → 600;
-    if ( check_run(board, color, i, j, 4) ) { return myPoint = 600; }
+    if ( check_run(board, color, i, j, 4) ) { return myPoint = 800; }
     // 自分の飛び4連を作る
-    if ( isJumpLen(board, color, i, j, 4) ) { return myPoint = 600; }
+    if ( isJumpLen(board, color, i, j, 4) ) { return myPoint = 800; }
     // 8個目の石を取る
-    if ( stone == 6 && check_rem(board, color*-1, i, j) ) { return myPoint = 500; }
+    if ( stone == 6 && check_rem(board, color*-1, i, j) ) { return myPoint = 600; }
     // 自分の三連を作る → 400;
     if ( check_run(board, color, i, j, 3) ) { return myPoint = 400; }
     // 自分の飛び三連を作る
@@ -136,11 +136,11 @@ public class User_s14t241_01 extends GogoCompSub {
   public int enemyEvaluation(int[][] board, int color, int i, int j, int stone) {
     int enemyPoint = 0;
     // 敗北阻止(五連) → 800;
-    if ( check_run(board, color, i, j, 5) ) { return enemyPoint = 800; }
+    if ( check_run(board, color, i, j, 5) ) { return enemyPoint = 900; }
     // 敗北阻止(飛び5連)
-    if ( isJumpLen(board, color, i, j, 5) ) { return enemyPoint = 800; }
+    if ( isJumpLen(board, color, i, j, 5) ) { return enemyPoint = 900; }
     // 敗北阻止10個取られる
-    if ( stone == 8 && check_rem(board, color*-1, i, j) ) { return enemyPoint = 800; }
+    if ( stone == 8 && check_rem(board, color*-1, i, j) ) { return enemyPoint = 900; }
     // 相手の四連を止める → 700;
     if ( check_run(board, color, i, j, 4) ) { return enemyPoint = 700; }
     // 相手の飛び4連を阻止
@@ -207,7 +207,7 @@ public class User_s14t241_01 extends GogoCompSub {
       int x = i+k*dx;
       int y = j+k*dy;
       if ( x < 0 || y < 0 || x >= size || y >= size ) { return false; }
-      if ( board[i+k*dx][j+k*dy] != color ) { return false; }
+      if ( board[i+k*dx][j+k*dy] != color*-1 ) { return false; }
       if (k == len-1) { color *= -1; }
     }
     return true;
