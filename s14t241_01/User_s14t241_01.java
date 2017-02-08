@@ -124,8 +124,6 @@ public class User_s14t241_01 extends GogoCompSub {
     if ( isJumpLen(board, color, i, j, 3) ) { return myPoint = 400; }
     // 相手の石を取る → 300;
     if ( check_rem(board, color, i, j) ) { return myPoint = 300; }
-    // 自分の石を守る → 200;
-    if ( check_rem(board, color*-1, i, j) ) { return myPoint = 200; }
     // 値の返却
     return myPoint;
   }
@@ -140,17 +138,19 @@ public class User_s14t241_01 extends GogoCompSub {
     // 敗北阻止(飛び5連)
     if ( isJumpLen(board, color, i, j, 5) ) { return enemyPoint = 900; }
     // 敗北阻止10個取られる
-    if ( stone == 8 && check_rem(board, color*-1, i, j) ) { return enemyPoint = 900; }
+    if ( stone == 8 && check_rem(board, color, i, j) ) { return enemyPoint = 900; }
     // 相手の四連を止める → 700;
     if ( check_run(board, color, i, j, 4) ) { return enemyPoint = 700; }
     // 相手の飛び4連を阻止
     if ( isJumpLen(board, color, i, j, 4) ) { return enemyPoint = 700; }
     // 8個目の石を取らせないようにする
-    if ( stone == 6 && check_rem(board, color*-1, i, j) ) { return enemyPoint = 500; }
+    if ( stone == 6 && check_rem(board, color, i, j) ) { return enemyPoint = 500; }
     // 相手の三連を防ぐ → 500;
     if ( check_run(board, color, i, j, 3) ) { return enemyPoint = 500; }
     // 相手の3連を防ぐ
     if ( isJumpLen(board, color, i, j, 3) ) { return enemyPoint = 500; }
+    // 相手の石を取る 
+    if ( check_rem(board, color, i, j) ) { return enemyPoint = 200; }
     // 値の返却
     return enemyPoint;
   }
@@ -289,7 +289,11 @@ public class User_s14t241_01 extends GogoCompSub {
         if ( dx0 == -dx1 && dy0 == -dy1 ) { continue; }
         // 3つ先が範囲外なら除外
         if ( isOutOfRange(i+dx0*len,j+dy0*len) || isOutOfRange(i+dx1*len,j+dy1*len) ) { continue; }
-        if ( isLen(board, color, i, j, dx0, dy0, serachLen) && isLen(board, color, i, j, dx1, dy1, serachLen) ) { return true; }
+        if ( isLen(board, color, i, j, dx0, dy0, serachLen) && isLen(board, color, i, j, dx1, dy1, serachLen) ) {
+          if ( ! (check_run_dir(board, color, i, j, -dx0, -dy0, 2)) && !(check_run_dir(board, color, i, j, -dx1, -dy1, 2)) ) {
+            return true;
+          }
+        }
       }
     }
     return false;
