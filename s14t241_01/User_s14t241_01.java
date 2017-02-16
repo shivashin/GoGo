@@ -53,9 +53,9 @@ public class User_s14t241_01 extends GogoCompSub {
     for (int i = 0; i < size; i++) {
       for (int j = 0; j < size; j++) {
         if (board.get_cell(i, j) != board.SPACE) {
-          values[i][j] = -10;
+          values[i][j] = -50;
         } else {
-          if (values[i][j] == -10) {
+          if (values[i][j] == -50) {
             values[i][j] = 0;
           }
         }
@@ -109,18 +109,18 @@ public class User_s14t241_01 extends GogoCompSub {
     if ( check_run(board, color, i, j, 5) ) { return myPoint = 1000; }
     // 自分の飛び5連を作る
     if ( isJumpLen(board, color, i, j, 5) ) { return myPoint = 1000; }
-    // 自分の四連を作る → 600;
-    if ( checkLen(board, color, i, j, 4) == 0 ) { return myPoint = 800; }
     // 4連の端に相手の石がある
-    if ( checkLen(board, color, i, j, 4) == 1 ) { return myPoint = 100; }
+    if ( checkEdge(board, color, i, j, 4) == 1 ) { return myPoint = 600; }
+    // 4連を作る
+    if ( checkEdge(board, color, i, j, 4) == 0 ) { return myPoint = 800; }
     // 自分の飛び4連を作る
     if ( isJumpLen(board, color, i, j, 4) ) { return myPoint = 800; }
     // 8個目の石を取る
     if ( stone == 6 && check_rem(board, color, i, j) ) { return myPoint = 600; }
-    // 自分の三連を作る → 400;
-    if ( checkLen(board, color, i, j, 3) == 0 ) { return myPoint = 400; }
     // 3連の端に相手の石がある
-    if ( checkLen(board, color, i, j, 3) == 1 ) { return myPoint = 300; }
+    if ( checkEdge(board, color, i, j, 3) == 1 ) { return myPoint = 300; }
+    // 3連を作る
+    if ( checkEdge(board, color, i, j, 3) == 0 ) { return myPoint = 400; }
     // 自分の飛び三連を作る
     if ( isJumpLen(board, color, i, j, 3) ) { return myPoint = 400; }
     // 相手の石を取る → 300;
@@ -141,17 +141,17 @@ public class User_s14t241_01 extends GogoCompSub {
     // 敗北阻止10個取られる
     if ( stone == 8 && check_rem(board, color, i, j) ) { return enemyPoint = 900; }
     // 相手の四連を止める → 700;
-    if ( checkLen(board, color, i, j, 4) == 0 ) { return enemyPoint = 800; }
+    if ( checkEdge(board, color, i, j, 4) == 0 ) { return enemyPoint = 700; }
     // 4連の端に石がある
-    if ( checkLen(board, color, i, j, 4) == 1 ) { return enemyPoint = 100; }
+    if ( checkEdge(board, color, i, j, 4) == 1 ) { return enemyPoint = 400; }
     // 相手の飛び4連を阻止
     if ( isJumpLen(board, color, i, j, 4) ) { return enemyPoint = 700; }
     // 8個目の石を取らせないようにする
     if ( stone == 6 && check_rem(board, color, i, j) ) { return enemyPoint = 500; }
     // 相手の三連を防ぐ → 500;
-    if ( checkLen(board, color, i, j, 3) == 0 ) { return enemyPoint = 500; }
+    if ( checkEdge(board, color, i, j, 3) == 0 ) { return enemyPoint = 500; }
     // 4連の端に石がある
-    if ( checkLen(board, color, i, j, 3) == 1 ) { return enemyPoint = 200; }
+    if ( checkEdge(board, color, i, j, 3) == 1 ) { return enemyPoint = 200; }
     // 相手の3連を防ぐ
     if ( isJumpLen(board, color, i, j, 3) ) { return enemyPoint = 500; }
     // 相手の石を取る 
@@ -281,7 +281,7 @@ public class User_s14t241_01 extends GogoCompSub {
   //------------------------------------------------
   public boolean isFoulL(int[][] board, int color, int i, int j, int dx0, int dy0) {
     int len = 3;  // 範囲外判定の必要な数
-    int serachLen = 3; // 禁じ手判定に必要な連数
+    int serachLen = 2; // 禁じ手判定に必要な連数
 
     // 以下禁じ手判定
     for ( int dx1 = -1; dx1 <= 1; dx1++ ) {
@@ -294,7 +294,7 @@ public class User_s14t241_01 extends GogoCompSub {
         if ( dx0 == -dx1 && dy0 == -dy1 ) { continue; }
         // 3つ先が範囲外なら除外
         if ( isOutOfRange(i+dx0*len,j+dy0*len) || isOutOfRange(i+dx1*len,j+dy1*len) ) { continue; }
-        if ( isLen(board, color, i, j, dx0, dy0, serachLen) == 0 && isLen(board, color, i, j, dx1, dy1, serachLen) == 0 ) {
+        if ( isLen(board, color, i, j, dx0, dy0, serachLen) && isLen(board, color, i, j, dx1, dy1, serachLen) ) {
           if ( ! (check_run_dir(board, color, i, j, -dx0, -dy0, 2)) && !(check_run_dir(board, color, i, j, -dx1, -dy1, 2)) ) {
             return true;
           }
@@ -309,7 +309,7 @@ public class User_s14t241_01 extends GogoCompSub {
   //------------------------------------------------
   public boolean isFoulT(int[][] board, int color, int i, int j, int dx0, int dy0) {
     // 最初に2連があるかどうかを判断する
-    if ( isLen(board, color, i, j, dx0, dy0, 3) != 1 ) { return false; }
+    if ( ! isLen(board, color, i, j, dx0, dy0, 2) ) { return false; }
 
     for ( int dx1 = -1; dx1 <= 1; dx1++ ) {
       for ( int dy1 = -1; dy1 <= 1; dy1++ ) {
@@ -322,7 +322,7 @@ public class User_s14t241_01 extends GogoCompSub {
         // 範囲外判定
         if ( isOutOfRange(i+dx1*2, j+dy1*2) || isOutOfRange(i-dx1*2, j-dy1*2) ) { continue; }
         // 2連の左右に石があることと2連の反対側に石が無いか
-        if ( isLen(board, color, i, j, dx1, dy1, 2) == 0 && isLen(board, color, i, j, -dx1, -dy1, 2) == 0 && board[i-dx0][j-dy0] == 0 ) { return true; }
+        if ( isLen(board, color, i, j, dx1, dy1, 1) && isLen(board, color, i, j, -dx1, -dy1, 1) && board[i-dx0][j-dy0] == 0 ) { return true; }
       }
     }
     return false;
@@ -333,7 +333,7 @@ public class User_s14t241_01 extends GogoCompSub {
   //------------------------------------------------
   public boolean isFoulX(int[][] board, int color, int i, int j, int dx0, int dy0) {
     int count = 0;  // 個数カウント用
-    int serachLen = 2;  // 調べる連の数
+    int serachLen = 1;  // 調べる連の数
     //-- 置く周りに石が何個あるか
     for ( int dx1 = -1; dx1 <= 1; dx1++ ) {
       for ( int dy1 = -1; dy1 <= 1; dy1++ ) {
@@ -346,8 +346,8 @@ public class User_s14t241_01 extends GogoCompSub {
         // 範囲外なら
         if ( isOutOfRange(i+dx1*2, j+dy1*2) || isOutOfRange(i-dx1*2, j-dy1*2) ) { continue; }
         // 石が1連+空白があるか
-        if ( isLen(board, color, i, j, dx0, dy0, serachLen) == 0 && isLen(board, color, i, j, -dx0, -dy0, serachLen) == 0 ) {
-          if ( isLen(board, color, i, j, dx1, dy1, serachLen) == 0 && isLen(board, color, i, j, -dx1, -dy1, serachLen) == 0 ) {
+        if ( isLen(board, color, i, j, dx0, dy0, serachLen) && isLen(board, color, i, j, -dx0, -dy0, serachLen) ) {
+          if ( isLen(board, color, i, j, dx1, dy1, serachLen) && isLen(board, color, i, j, -dx1, -dy1, serachLen) ) {
             return true;
           }
         } 
@@ -359,15 +359,15 @@ public class User_s14t241_01 extends GogoCompSub {
   //------------------------------------------------
   // 指定連+空白判定 ++- +++- +- +･･･石  -･･･空白
   //------------------------------------------------
-  public int isLen(int[][] board, int color, int i, int j, int dx, int dy, int len) {
+  public boolean isLen(int[][] board, int color, int i, int j, int dx, int dy, int len) {
     int k;
     //-- 指定個数の連続があるか
-    for ( k = 1; k < len; k++ ) {
+    for ( k = 1; k <= len; k++ ) {
       // 範囲外かの判定
       if ( !isOutOfRange(i+dx*k,j+dy*k) ) {
         // 自分音石が無かったら
         if ( board[i+dx*k][j+dy*k] != color ) {
-          return -1;
+          return false;
         }
       }
     }
@@ -375,11 +375,13 @@ public class User_s14t241_01 extends GogoCompSub {
     // 範囲外の判定
     if ( !isOutOfRange(i+dx*k,j+dy*k) ) {
       // 次の場所に石があったら
-      if ( board[i+dx*k][j+dy*k] != 0 ) {
-        return 1;
+      if ( board[i+dx*k][j+dy*k] != color ) {
+        if ( board[i+dx*k][j+dy*k] != color*-1 ) {
+          return true;
+        }
       }
     }
-    return 0;
+    return false;
   }
   //------------------------------------------------
   // 飛びの判定
@@ -401,19 +403,37 @@ public class User_s14t241_01 extends GogoCompSub {
   //------------------------------------------------
   // 端の操作を行う
   //------------------------------------------------
-  public int checkLen(int[][] board, int color, int i, int j, int len) {
+  public int checkEdge(int[][] board, int color, int i, int j, int len) {
     for ( int dx = -1; dx <= 1; dx++ ) {
       for ( int dy = -1; dy <= 1; dy++ ) {
         if ( dx == 0 && dy == 0 ) { continue; }
-        if ( isLen(board, color, i, j, dx, dy, len) == 1 ) { 
+        if ( checkLen(board, color, i, j, dx, dy, len) == 1 ) { 
           return 1; 
-        } else if ( isLen(board, color, i, j, dx, dy, len) == 0 ) {
+        } else if ( checkLen(board,color, i, j, dx, dy, len) == 0 ) {
           return 0;
         } 
       }
     }
     return -1;
   }
+  //------------------------------------------------
+  // 指定連+空白確認
+  //------------------------------------------------
+  public int checkLen(int[][] board, int color, int i, int j, int dx, int dy, int len) {
+    //-- 指定個数の連続があるか
+    if ( ! check_run_dir(board, color, i, j, dx, dy, len) ) {
+      return -1;
+    }
+    //-- 指定個数の連続の後に空白があるか
+    // 次の場所に石があったら
+    if ( board[i+dx*len][j+dy*len] != color ) {
+      if ( board[i+dx*len][j+dy*len] < 0 ) {
+        return 1;
+      }
+    }
+    return 0;
+  }
+
   //------------------------------------------------
   // 盤面に評価値を付ける
   //------------------------------------------------
